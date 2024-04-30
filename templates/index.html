@@ -1,0 +1,237 @@
+{% load static %}
+<html>
+  <head>
+    <title>Calc</title>
+    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/style.css" %}" rel="stylesheet">
+    <script src="{% static "js/bootstrap.bundle.min.js" %}"></script>
+    <script src="{% static "js/chart.js" %}"></script>
+    <script src="{% static "js/jquery-3.7.1.min.js" %}"></script>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <div class="row chart-row">
+        <div class="col-6">
+          <h2>Czech Startups Calculator</h2>  
+          <div>
+            <canvas id="chart"></canvas>  
+          </div>
+          <div class="chart-form">
+            <h4>Результат</h4>
+            <p>Возможно окупится</p>
+            <h5>Состояние на пятый год</h5>
+            <p>0 пользователей</p>
+            <p>Убыток -1</p>
+            <p>Требуется бесконечное финансирование</p>
+            <p>х пожизненная ценность клиента</p>
+            <p>Средний срок хранения 0,7 года</p>
+          </div>
+        </div>
+        <div class="col-6">
+          <form class="chart-form" action="{% url 'index' %}">
+            <div class="row">
+              <div class="col-6">
+                <div>
+                  <h5>Name of the product</h5>
+                  <input type="text" id="product_name" name="product_name" min="1" max="100" value="{{ args.product_name }}" class="form-control"/>  
+                </div>
+
+                <div class="mt-4">
+                  <h5>Product group and product</h5>
+                  <select class="form-select" name="group" id="group">
+                    {% for group, products in PRODUCT_GROUPS.items %}
+                      {% for product in products %}
+                      <option value="{{ group }}-{{ product }}"
+                        {% if product is args.product and group is args.group %}
+                          selected
+                        {% endif %}
+                        >{{ group }} - {{ product }}</option>
+                      {% endfor %}
+                    {% endfor %}
+                  </select>  
+                </div>
+
+                <div class="mt-4">
+                  <div id="start_users_count_block">
+                    <span>Starting number of customers</span>
+                    <label id="start_users_count_value" for="start_users_count" class="form-label">{{ args.start_users_count }}</label>
+                    <input onchange="start_users_count_value.innerHTML = start_users_count.valueAsNumber" type="range" id="start_users_count" name="start_users_count" min="1" max="2000" value="{{ args.start_users_count }}" class="form-range"/>  
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <h5>Starting number of customers</h5>
+                  <fieldset>
+                    <div>
+                      <input onchange="set_from_address()" type="radio" id="from_address_radio" name="start_users_count_radio" value="from_address" />
+                      <label for="from_address">From address</label>
+                    </div>
+                    <div>
+                      <input onchange="set_from_user()" type="radio" id="from_user_radio" name="start_users_count_radio" value="from_user" checked />
+                      <label for="from_user_radio">From user</label>
+                    </div>
+                  </fieldset>
+                </div>
+                <div id="target_users_count_block">
+                  <span>Target number of customers</span>
+                  <label id="target_users_count_value" for="target_users_count" class="form-label">{{ args.target_users_count }}</label>
+                  <input onchange="target_users_count_value.innerHTML = target_users_count.valueAsNumber" type="range" id="target_users_count" name="target_users_count" min="1" max="2000" value="{{ args.target_users_count }}" class="form-range"/>  
+                </div>
+                <div id="address_block" hidden>
+                  <div>
+                    <span>Name of city</span>
+                    <label for="address" class="form-label">{{ args.address }}</label>
+                    <input type="text" id="address" name="address" min="1" value="{{ args.address }}" class="form-control"/>  
+                    <input type="button" value="Найти" class="form-control" onclick="get_population()"/>
+                  </div>
+                  <div id="population_block" hidden>
+                    <span>Population</span>
+                    <input readonly type="number" id="total_population" name="total_population" min="1" value="1" class="form-control"/>                   
+                  </div>
+                  <div id="customers_share_block" hidden>
+                    <span>Share of the customers from the population</span>
+                    <label id="customers_share_value" for="customers_share" class="form-label">50%</label>
+                    <input onchange="customers_share_value.innerHTML = customers_share.valueAsNumber + '%'" type="range" id="customers_share" name="customers_share" min="0" max="100" value="50" class="form-range"/> 
+                  </div>
+                  <div id="market_share_block" hidden>
+                    <span>Share of market, which user wants to have</span>
+                    <label id="market_share_value" for="market_share" class="form-label">50%</label>
+                    <input onchange="market_share_value.innerHTML = market_share.valueAsNumber + '%'" type="range" id="market_share" name="market_share" min="0" max="100" value="50" class="form-range"/> 
+                  </div>
+                </div>
+
+                <div class="mt-4">
+                  <h5>Churn rate</h5>
+                  <label id="churn_rate_value" for="churn_rate" class="form-label">{{ args.churn_rate }}%</label>
+                  <input onchange="churn_rate_value.innerHTML = churn_rate.valueAsNumber + '%'" type="range" id="churn_rate" name="churn_rate" min="0" max="100" value="{{ args.churn_rate }}" class="form-range"/>
+                </div>
+
+              </div>
+              <div class="col-6">
+                <div class="mt-4">
+                  <h5>ARPU</h5>
+                  <label id="ARPU_value" for="ARPU" class="form-label">{{ args.ARPU }}</label>
+                  <input onchange="ARPU_value.innerHTML = ARPU.valueAsNumber" type="range" id="ARPU" name="ARPU" min="0" max="2500" value="{{ args.ARPU }}" class="form-range"/>
+                  {% comment %} <input type="button" value="Found by software" onclick="get_arpu()"/> {% endcomment %}
+                </div>
+
+                <div class="mt-4">
+                  <h5>Total costs per customer</h5>
+                  <label id="TCPC_value" for="TCPC" class="form-label">{{ args.TCPC }}</label>
+                  <input onchange="TCPC_value.innerHTML = TCPC.valueAsNumber" type="range" id="TCPC" name="TCPC" min="0" max="2500" value="{{ args.TCPC }}" class="form-range"/>
+                </div>
+
+                <div class="mt-4">
+                  <h5>Discount rate</h5>
+                  <label id="discount_rate_value" for="discount_rate" class="form-label">{{ args.discount_rate }}%</label>
+                  <input onchange="discount_rate_value.innerHTML = discount_rate.valueAsNumber + '%'" type="range" id="discount_rate" name="discount_rate" min="5" max="25" value="{{ args.discount_rate }}" class="form-range"/>
+                </div>
+              </div>
+
+                {% comment %} <span>Годовой прирост пользователей</span>
+                <label id="user_growth_per_year_value" for="user_growth_per_year" class="form-label">{{ args.user_growth_per_year }}%</label>
+                <input onchange="user_growth_per_year_value.innerHTML = user_growth_per_year.valueAsNumber + '%'" type="range" id="user_growth_per_year" name="user_growth_per_year" min="0" max="500" value="{{ args.user_growth_per_year }}" class="form-range"/>
+                
+
+
+                <span></span>
+                
+                <span>Постоянные годовые затраты</span>
+                <label id="fixed_year_cost_value" for="fixed_year_cost" class="form-label">{{ args.fixed_year_cost }}</label>
+                <input onchange="fixed_year_cost_value.innerHTML = fixed_year_cost.valueAsNumber" type="range" id="fixed_year_cost" name="fixed_year_cost" min="0" max="1000000" value="{{ args.fixed_year_cost }}" class="form-range"/>
+
+                <span>Затраты на старт</span>
+                <label id="start_cost_value" for="start_cost" class="form-label">{{ args.start_cost }}</label>
+                <input onchange="start_cost_value.innerHTML = start_cost.valueAsNumber" type="range" id="start_cost" name="start_cost" min="0" max="1000000" value="{{ args.start_cost }}" class="form-range"/>
+               {% endcomment %}
+                <input type="submit" value="Перерасчитать" class="form-control"/>
+              </div>
+            </div>
+          </form>
+        </div>
+    </div>
+    <script>
+      function set_from_user() {
+        address_block.setAttribute("hidden", "hidden");
+        start_users_count_block.removeAttribute("hidden");
+      }
+
+      function set_from_address() {
+        start_users_count_block.setAttribute("hidden", "hidden");
+        address_block.removeAttribute("hidden");
+      }
+
+      function get_population() {
+        var name = address.value;
+        $.ajax({
+            method: 'GET',
+            url: 'https://api.api-ninjas.com/v1/city?name=' + name,
+            headers: { 'X-Api-Key': 'bQcopmGejbzgm0snmKieRg==h78Ee5eF4AKMwf74'},
+            contentType: 'application/json',
+            success: function(result) {
+              total_population.value = result[0]['population'];
+              population_block.removeAttribute("hidden");
+              customers_share_block.removeAttribute("hidden");
+              market_share_block.removeAttribute("hidden");
+            },
+            error: function ajaxError(jqXHR) {
+              console.error('Error: ', jqXHR.responseText);
+            }
+        });
+      }
+
+      function get_arpu() {
+
+      }
+    </script>
+    <script>  
+      var ctx = document.getElementById("chart").getContext("2d");
+      var myChart = new Chart(ctx, {  
+      type: "line",  
+      data: {  
+          labels: [0, 1, 2, 3, 4, 5],  
+          datasets: [  
+          {  
+              label: "PROFIT",  
+              data: {{ profit }},
+              borderColor: 'rgb(29,192,254)',
+              backgroundColor: 'rgb(29,192,254, 0)',
+              yAxisID: 'profit'
+          },  
+          {  
+              label: "USERS",  
+              data: {{ users }},
+              borderColor: 'rgb(255,149,26)',
+              backgroundColor: 'rgb(255,149,26, 0)',
+              yAxisID: 'users'
+          },  
+          { 
+            label: "Zero Profit Line",
+            data: [0, 0, 0, 0, 0, 0],
+            borderColor: 'rgb(0, 0, 0, 0.3)',
+            backgroundColor: 'rgb(0, 0, 0, 0.3)',
+            yAxisID: 'profit'            
+          }
+          ],  
+      },  
+      options: {
+        scales: {
+          yAxes: [{
+            id: 'users',
+            type: 'linear',
+            position: 'right'
+          }, {
+            id: 'profit',
+            type: 'linear',
+            position: 'left',
+            {% comment %} ticks: {
+              max: -1000000,
+              min: 1000000
+            } {% endcomment %}
+          }]
+        }
+      }
+      });  
+  </script>  
+    </body>
+</html>

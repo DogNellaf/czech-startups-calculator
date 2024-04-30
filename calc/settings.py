@@ -80,8 +80,11 @@ WSGI_APPLICATION = 'calc.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'u2621067_default',
+        'USER': 'u2621067_default',
+        'PASSWORD': 'dfEB815cJ40kaCVD',
+        'HOST': 'localhost',
     }
 }
 

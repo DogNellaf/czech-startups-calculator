@@ -141,39 +141,39 @@ PRODUCT_GROUPS = {
         'Sneakers',
         'Oxfords'
     ],
-    'Consumer Electronics': [
-        'Smartphones',
-        'Laptops',
-        'Smart TVs'
-    ],
-    'Automotive': [
-        'Electric Vehicles',
-        'Trucks',
-        'Car Accessories',
-        'Motorcycles'
-    ],
-    'Financial Services': [
-        'Advisory',
-        'Banking',
-        'Investment Funds',
-        'Insurance'
-    ],
-    'Pharmaceuticals': [
-        'Prescription Drugs',
-        'Over-the-Counter Medicines',
-        'Medical Devices',
-        'Surgery Tables'
-    ],
-    'Food and Beverage': [
-        'Packaged Foods',
-        'Beverages (Soft Drinks, Juices)',
-        'Dairy Products'
-    ],
-    'Renewable Energy': [
-        'Solar Panels',
-        'Wind Turbines',
-        'Battery Storage Systems'
-    ]
+    # 'Consumer Electronics': [
+    #     'Smartphones',
+    #     'Laptops',
+    #     'Smart TVs'
+    # ],
+    # 'Automotive': [
+    #     'Electric Vehicles',
+    #     'Trucks',
+    #     'Car Accessories',
+    #     'Motorcycles'
+    # ],
+    # 'Financial Services': [
+    #     'Advisory',
+    #     'Banking',
+    #     'Investment Funds',
+    #     'Insurance'
+    # ],
+    # 'Pharmaceuticals': [
+    #     'Prescription Drugs',
+    #     'Over-the-Counter Medicines',
+    #     'Medical Devices',
+    #     'Surgery Tables'
+    # ],
+    # 'Food and Beverage': [
+    #     'Packaged Foods',
+    #     'Beverages (Soft Drinks, Juices)',
+    #     'Dairy Products'
+    # ],
+    # 'Renewable Energy': [
+    #     'Solar Panels',
+    #     'Wind Turbines',
+    #     'Battery Storage Systems'
+    # ]
 }
 
 # default params from document
@@ -181,7 +181,7 @@ DEFAULT_PARAMS = {
     'product_name': 'SOM Sneakers',
     'group': 'Footwear',
     'product': 'Sneakers',
-    'target_users_count': 1,
+    'target_users_count': 4000,
     'start_users_count': 1200,
     'population': 1200000,
     'market_share': 10,

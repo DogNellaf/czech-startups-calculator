@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from calc.settings import PRODUCT_GROUPS, DEFAULT_PARAMS
 
-GROWTH_RATE = 0.25
+STARTING_COST = 15000
 
 def index(request):
     
@@ -24,24 +24,13 @@ def index(request):
         
     results = __calculate_results(args)
 
-    return render(request, 'index.html', {"users": results['users'], 
-                                          "profit": results['profit'],
+    return render(request, 'index.html', {"results": results,
                                           "args": args,
-                                          "text_results": [],
                                           "PRODUCT_GROUPS": PRODUCT_GROUPS})
     
 def __calculate_results(args) -> dict:
-    result = {
-        'users': [],
-        'profit': [0]
-    }
 
-    ARPU = float(args['ARPU'])
-    TCPC = float(args['TCPC'])
-
-    churn_rate = float(args['churn_rate']) / 100
-
-    profit = 0
+    initial_customers_number = int(args['start_users_count'])
 
     if 'market_share' in args:
         market_share = float(args['market_share']) / 100
@@ -51,35 +40,57 @@ def __calculate_results(args) -> dict:
     else:
         target_customers_number = int(args['target_users_count'])
 
+    CAGR = (target_customers_number / initial_customers_number) ** (1/5) - 1    
+
+    churn_rate = float(args['churn_rate']) / 100
+
+    ARPU = float(args['ARPU'])
+    TCPC = float(args['TCPC'])
+
     discount_rate = float(args['discount_rate']) / 100
-
-    initial_customers_number = int(args['start_users_count'])
-
-    CAGR = (target_customers_number / initial_customers_number) ** (1/5) - 1
-
-    customers = initial_customers_number * (1 - churn_rate) * (1 + CAGR)
-    result['users'].append(customers)
+    growth_rate = CAGR * (1 - churn_rate)
 
     company_value = 0
-    
+
+    result = {
+        'users': [initial_customers_number],
+        'profit': [0],
+        'revenues': [0]
+    }
+
+    # year 1
+    revenue = ARPU * initial_customers_number * (1 + growth_rate)
+    result['revenues'].append(revenue)
+    TCPC_per_year = TCPC * (1 + CAGR) * initial_customers_number
+
+    customers = initial_customers_number * (1 + CAGR) * (1 - churn_rate)
+    result['users'].append(customers)
+
+    result['profit'].append(revenue - TCPC_per_year)
+
     if 'market_share' in args:
         market_size = ARPU * population * customers_share * market_share
     else:
         market_size = ARPU * target_customers_number
 
-    for year in range(1, 6):
+    result['market_size'] = market_size
+
+    for year in range(2, 6):
+
+        revenue *= (1 + growth_rate)
+        result['revenues'].append(revenue)
+        
         customers = round(customers * (1 + CAGR) * (1 - churn_rate))
         result['users'].append(customers)
 
-        revenue_growth_rate = GROWTH_RATE * (1 - churn_rate)
-        revenue_per_each_year = initial_customers_number * ARPU * (1 - revenue_growth_rate)
-        TCPC_per_year = initial_customers_number * TCPC * CAGR
-        net_profit_per_year = revenue_per_each_year - TCPC_per_year
-        profit+=net_profit_per_year
-        result['profit'].append(profit)
+        TCPC_per_year *= (1 + CAGR)
+        
+        net_profit = revenue - TCPC_per_year
+
+        result['profit'].append(net_profit)
 
         discount_factor_per_year = 1 / ((1 + discount_rate)**year)
-        DCF_per_year = net_profit_per_year * discount_factor_per_year
+        DCF_per_year = net_profit * discount_factor_per_year
         company_value += DCF_per_year
 
     result['company_value'] = company_value
